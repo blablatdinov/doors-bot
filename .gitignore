@@ -1,0 +1,30 @@
+# redactors
+.idea/
+.vscode
+
+# system files
+.DS_Store
+
+# cache files
+*__pycache__/
+celerybeat*
+
+# pytest and coverage
+.coverage
+.pytest_cache
+htmlcov/
+
+# database and dumps
+*.sql*
+db.sqlite3
+dumps/
+
+# environment
+venv/
+.env
+
+# static 
+static/
+
+# logs
+logs/
