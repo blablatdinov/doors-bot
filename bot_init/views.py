@@ -1,13 +1,13 @@
 import telebot
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from loguru import logger
 
 from bot_init.utils import get_tbot_instance
-from config.settings import TG_BOT
 
-token = TG_BOT.token
+token = settings.TG_BOT.token
 tbot = get_tbot_instance()
 
 log = logger.bind(task="write_in_data")
