@@ -21,6 +21,7 @@ dumps/
 
 # environment
 venv/
+env/
 .env
 
 # static 

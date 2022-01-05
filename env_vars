@@ -1,5 +1,0 @@
-#DATABASE_URL=psql://username:password@host:5432/db_name
-DATABASE_URL=sqlite:///db.sqlite3
-DEBUG=on
-TOOLBAR=on
-BOT_TOKEN=452230948:AAFBRxigSQIg1PZJTjrY6c3OHFvTnKDP_AA

@@ -9,6 +9,8 @@ TG_BOT = namedtuple('Bot', ['token', 'webhook_host', 'name', 'id'])
 TG_BOT.token = env('BOT_TOKEN')
 TG_BOT.webhook_host = env('HOST', str, default='')
 
+USERS_ID = env('USERS_ID')
+
 try:
     r = requests.get(f'https://api.telegram.org/bot{TG_BOT.token}/getMe').json()
     if not r.get('ok'):
