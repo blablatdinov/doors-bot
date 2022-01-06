@@ -1,4 +1,5 @@
 import telebot
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -9,8 +10,9 @@ from config.settings import TG_BOT, USERS_ID
 
 import service
 import ast 
+from config.settings import TG_BOT
 
-token = TG_BOT.token
+token = settings.TG_BOT.token
 tbot = get_tbot_instance()
 log = logger.bind(task="write_in_data")
 
