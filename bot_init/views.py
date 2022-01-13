@@ -5,11 +5,11 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from loguru import logger
 
+
 from bot_init.utils import get_tbot_instance
 from config.settings import TG_BOT, USERS_ID
 
-import service
-import ast 
+import bot_init.service
 from config.settings import TG_BOT
 
 token = settings.TG_BOT.token

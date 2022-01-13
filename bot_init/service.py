@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from loguru import logger
 
+
 from bot_init.models import Order
 from config.settings import USERS_ID
 
