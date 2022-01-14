@@ -5,13 +5,12 @@ from loguru import logger
 
 
 from bot_init.models import Order
-from config.settings import USERS_ID
 
 import ast 
-from telebot.types import Message
 
-users_id = ast.literal_eval(USERS_ID)
-users_id = users_id
+
+
+users_id = {'admin': 407475894,'director': None, 'manager': 407475894, 'measurer': 407475894, 'deliveryman': None, 'installer': None}
 
 
 manager_buttons = ['Создать заказ', 'Информация о заказе', 'Список активных заказов']
@@ -24,7 +23,7 @@ manager_questions = ['Введите ФИО клиента', 'Введите н�
 
 def user_select(id):
     """Обработчик id пользователя по словарю 'должность: id'"""
-    for k, v in users_id.items():
+    for k, v in users_id:
         if v == id:
             return k
 

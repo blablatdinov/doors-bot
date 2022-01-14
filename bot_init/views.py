@@ -7,9 +7,9 @@ from loguru import logger
 
 
 from bot_init.utils import get_tbot_instance
-from config.settings import TG_BOT, USERS_ID
+from config.settings import TG_BOT
 
-import bot_init.service
+import bot_init.service as service
 from config.settings import TG_BOT
 
 token = settings.TG_BOT.token
@@ -41,7 +41,7 @@ def start_handler(message):
         tbot.send_message(message.chat.id, 'hello')
     # tbot.send_message(users['super_admin'], 'hi')
 
-@bot.message_handler(content_types=['text'])
+@tbot.message_handler(content_types=['text'])
 def main_menu(message):
     """Обработчик id пользователя"""
     user = service.menu_user(message.chat.id)
