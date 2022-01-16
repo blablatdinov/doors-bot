@@ -5,7 +5,6 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from loguru import logger
 
-
 from bot_init.utils import get_tbot_instance
 from config.settings import TG_BOT
 
@@ -77,7 +76,7 @@ def manager_action(message):
         question = tbot.send_message(message.chat.id, service.manager_questions[0])
         tbot.register_next_step_handler(question, create_order_1)
     else:
-        pass
+        measurer_menu(message)
 
 
 def create_order_1(message):
@@ -88,8 +87,7 @@ def create_order_1(message):
     name_client = service.split_name(message.text)
     question = tbot.send_message(message.chat.id, f'Пожалуйста, проверьте введенные данные:\n\nФамилия: {name_client[0]}\nИмя: {name_client[1]}\nОтчество: {name_client[2]}\n\nЕсли все верно нажмите "Да"',
                                reply_markup=markup)
-    name = '\n'.join(name_client)
-    service.compile_order(name, 'w')
+    service.compile_order(message.chat.id, name_client, 'full_name')
     tbot.register_next_step_handler(question, create_order_2)
 
 
@@ -105,7 +103,7 @@ def create_order_2(message):
 def create_order_3(message):
     """Обработчик создания новогового заказа. Фиксируем телефон клиента.
     Запрашиваем информацию о заказе"""
-    service.compile_order(message.text, 'a')
+    service.compile_order(message.chat.id, message.text, 'phone')
     question = tbot.send_message(message.chat.id, service.manager_questions[2])
     tbot.register_next_step_handler(question, create_order_4)
 
@@ -113,11 +111,11 @@ def create_order_3(message):
 def create_order_4(message):
     """Обработчик создания новогового заказа. Фиксируем информацию о заказе.
     Уточняем правильность полной информации"""
-    service.compile_order(message.text, 'a')
+    service.compile_order(message.chat.id, message.text, 'inform_order')
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.row(service.main_buttons[0], service.main_buttons[2])
-    mes = service.proof_order()
-    question = tbot.send_message(message.chat.id, f'Пожалуйста, проверьте данные:\n\n{mes}\nЕсли все верно нажмите "Да"',
+    mes = service.compile_order(message.chat.id, message.text, 'get_data')
+    question = tbot.send_message(message.chat.id, f'Пожалуйста, проверьте данные:\n\n{mes}\n\nЕсли все верно нажмите "Да"',
                                reply_markup=markup)
     tbot.register_next_step_handler(question, save_order)
 
