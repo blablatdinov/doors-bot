@@ -4,8 +4,11 @@ from django.utils import timezone
 
 User = get_user_model()
 
+
 class Order(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    """Создание модели для заказов на двери."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     info = models.TextField()
     info_from_measurer = models.TextField()
     deliveryman_datetime = models.DateTimeField(default=timezone.now)
