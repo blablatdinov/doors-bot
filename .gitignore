@@ -20,7 +20,8 @@ db.sqlite3
 dumps/
 
 # environment
-venv/
+.venv/
+env/
 .env
 
 # static 

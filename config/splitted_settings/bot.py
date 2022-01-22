@@ -9,6 +9,7 @@ TG_BOT = namedtuple('Bot', ['token', 'webhook_host', 'name', 'id'])
 TG_BOT.token = env('BOT_TOKEN')
 TG_BOT.webhook_host = env('HOST', str, default='')
 
+
 try:
     r = requests.get(f'https://api.telegram.org/bot{TG_BOT.token}/getMe').json()
     if not r.get('ok'):
@@ -17,5 +18,6 @@ try:
     TG_BOT.id = r['result']['id']
 except ConnectionError:
     pass
+
 
 TG_BOT.admins = list(map(int, env('ADMINS', list, [])))

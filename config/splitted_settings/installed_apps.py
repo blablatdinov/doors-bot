@@ -12,4 +12,5 @@ INSTALLED_APPS = [
 
     'accounts',
     'bot_init',
+    'orders',
 ]
