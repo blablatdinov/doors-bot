@@ -1,13 +1,20 @@
 from django.core.cache import cache
 
 from bot_init.models import Order
+from bot_init.views import notice
 
-users_id = [['manager', 407475894], ['measurer', None]]
+users_id = [['director', None], ['manager', 407475894], ['measurer', None], ['installer', None]]
+#694285636
+director_id = 407475894
+manager_id = 407475894
+measurer_id = 407475894
 
-
-manager_buttons = ['Создать заказ', 'Информация о заказе', 'Список активных заказов']
-measurer_buttons = ['Информация о заказе', 'Список активных заказов']
-main_buttons = ['Да', 'Нет', 'Изменить данные', 'Принято в работу']
+main_menu_button = 'Главное меню'
+director_buttons = ['Информация о заказах', 'Список активных заказов' main_menu_button]
+manager_buttons = ['Создать заказ', 'Информация о заказе', 'Список активных заказов', main_menu_button]
+measurer_buttons = ['Информация о заказе', 'Список активных заказов', main_menu_button]
+notice_butons = ['Принято в работу', 'Добавить примечания', main_menu_button]
+main_buttons = ['Да', 'Нет', 'Изменить данные']
 
 manager_questions = [
     'Введите ФИО клиента', 'Введите номер телефона', 'Введите информацию о заказе', 'Пожалуйста, проверьте данные:'

@@ -40,10 +40,23 @@ def start_handler(message):
 def main_menu(message):
     """Обработчик id пользователя."""
     user = service.menu_user(message.chat.id)
-    if user == 'manager':
+    if user == 'director':
+        director_menu(message)
+    elif user == 'manager':
         manager_menu(message)
     elif user == 'measurer':
         measurer_menu(message)
+    elif user == 'installer':
+        installer_menu(message)
+
+
+def director_menu(message):
+    """Основное меню рукводителя."""
+    markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+    for button in service.director_buttons:
+        markup.row(button)
+    question = tbot.send_message(message.chat.id, 'Пожалуйста, выберите действие.', reply_markup=markup)
+    tbot.register_next_step_handler(question, manager_action)
 
 
 def manager_menu(message):
@@ -64,8 +77,17 @@ def measurer_menu(message):
     tbot.register_next_step_handler(question, start_handler)
 
 
+def installer_menu(message):
+    """Основное меню установщика."""
+    markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+    for button in service.measurer_buttons:
+        markup.row(button)
+    question = tbot.send_message(message.chat.id, 'Пожалуйста, выберите действие.', reply_markup=markup)
+    tbot.register_next_step_handler(question, start_handler)
+
+
 def manager_action(message):
-    """Обработчик команд менеджера."""
+    """Обработчик команд менеджера. Запрашиваем ФИО клиента"""
     if message.text == service.manager_buttons[0] or message.text == service.main_buttons[2]:
         question = tbot.send_message(message.chat.id, service.manager_questions[0])
         tbot.register_next_step_handler(question, create_order_1)
@@ -74,20 +96,19 @@ def manager_action(message):
 
 
 def create_order_1(message):
-    """Обработчик создания нового заказа. Фиксируем ФИО клиента. Запрашиваем телефон."""
+    """Обработчик создания нового заказа. Уточням ФИО клиента."""
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.row(service.main_buttons[0], service.main_buttons[2])
     name_client = service.split_name(message.text)
-    mes = f'Пожалуйста, проверьте введенные данные:\n\nФамилия: {name_client[0]}\n'
-    'Имя: {name_client[1]}\nОтчество: {name_client[2]}\n\nЕсли все верно нажмите "Да"'
+    mes = f'Пожалуйста, проверьте введенные данные:\n\nФамилия: {name_client[0]}\nИмя: {name_client[1]}\nОтчество: {name_client[2]}\n\nЕсли все верно нажмите "Да"'
     question = tbot.send_message(message.chat.id, mes, reply_markup=markup)
     service.compile_order(message.chat.id, name_client, 'full_name')
     tbot.register_next_step_handler(question, create_order_2)
 
 
-def create_order_2(message):
-    """Уточняем правильность ФИО."""
-    if message.text == service.main_buttons[0]:
+def create_order_2(message, flag=0):
+    """Если ФИО правильно. Запрашиваем телефон"""
+    if message.text == service.main_buttons[0] or flag == 1:
         question = tbot.send_message(message.chat.id, service.manager_questions[1])
         tbot.register_next_step_handler(question, create_order_3)
     elif message.text == service.main_buttons[2]:
@@ -107,7 +128,7 @@ def create_order_4(message):
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.row(service.main_buttons[0], service.main_buttons[2])
     new_order = service.compile_order(message.chat.id, message.text)
-    mes = f'Имя: {new_order[0]}\n\nТелефон клиента: {new_order[1]}\n\nИнформация о заказе: {new_order[2]}'
+    mes = f'{new_order[0]}\n\nТелефон клиента: {new_order[1]}\n\nИнформация о заказе: {new_order[2]}'
     mes_full = f'Пожалуйста, проверьте данные:\n\n{mes}\n\nЕсли все верно нажмите "Да"'
     question = tbot.send_message(message.chat.id, mes_full, reply_markup=markup)
     tbot.register_next_step_handler(question, save_order)
@@ -116,13 +137,18 @@ def create_order_4(message):
 def save_order(message):
     """Обработчик создания новогового заказа. В случае правильности полной информации, записываем ее в БД."""
     if message.text == service.main_buttons[0]:
-        new_order = service.compile_order(message.chat.id, message.text)
-        mes = f'Имя: {new_order[0]}\n\nТелефон клиента: {new_order[1]}\n\nИнформация о заказе: {new_order[2]}'
-        service.writing_order_database(new_order)
-        tbot.send_message(message.chat.id, 'Заявка сохранена!')
-        markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
-        markup.row(service.main_buttons[3])
-        tbot.send_message(service.users_id['measurer'], f'Поступила новая заявка:\n\n{mes}', reply_markup=markup)
-        main_menu(message)
+        # service.writing_order_database(new_order)
+        notice(message)
     elif message.text == service.main_buttons[2]:
-        manager_action(message)
+        create_order_2(message, flag=1)
+
+
+def notice(message):
+    new_order = service.compile_order(message.chat.id, message.text)
+    mes = f'Имя: {new_order[0]}\n\nТелефон клиента: {new_order[1]}\n\nИнформация о заказе: {new_order[2]}'
+    tbot.send_message(service.measurer_id, f'Поступила новая заявка:\n\n{mes}')
+    tbot.send_message(service.director_id, f'Поступила новая заявка:\n\n{mes}')
+
+
+def mark_order(message):
+    pass
