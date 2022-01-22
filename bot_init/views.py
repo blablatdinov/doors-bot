@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from loguru import logger
 
-import bot_init.service as service
+from bot_init import service
 from bot_init.utils import get_tbot_instance
 
 token = settings.TG_BOT.token
@@ -87,7 +87,7 @@ def installer_menu(message):
 
 
 def manager_action(message):
-    """Обработчик команд менеджера. Запрашиваем ФИО клиента"""
+    """Обработчик команд менеджера. Запрашиваем ФИО клиента."""
     if message.text == service.manager_buttons[0] or message.text == service.main_buttons[2]:
         question = tbot.send_message(message.chat.id, service.manager_questions[0])
         tbot.register_next_step_handler(question, create_order_1)
@@ -100,14 +100,20 @@ def create_order_1(message):
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.row(service.main_buttons[0], service.main_buttons[2])
     name_client = service.split_name(message.text)
-    mes = f'Пожалуйста, проверьте введенные данные:\n\nФамилия: {name_client[0]}\nИмя: {name_client[1]}\nОтчество: {name_client[2]}\n\nЕсли все верно нажмите "Да"'
+    mes = (
+        f'Пожалуйста, проверьте введенные данные:\n\n'
+        f'Фамилия: {name_client[0]}\n'
+        f'Имя: {name_client[1]}\n'
+        f'Отчество: {name_client[2]}\n\n'
+        'Если все верно нажмите "Да"'
+    )
     question = tbot.send_message(message.chat.id, mes, reply_markup=markup)
     service.compile_order(message.chat.id, name_client, 'full_name')
     tbot.register_next_step_handler(question, create_order_2)
 
 
 def create_order_2(message, flag=0):
-    """Если ФИО правильно. Запрашиваем телефон"""
+    """Если ФИО правильно. Запрашиваем телефон."""
     if message.text == service.main_buttons[0] or flag == 1:
         question = tbot.send_message(message.chat.id, service.manager_questions[1])
         tbot.register_next_step_handler(question, create_order_3)
@@ -137,18 +143,14 @@ def create_order_4(message):
 def save_order(message):
     """Обработчик создания новогового заказа. В случае правильности полной информации, записываем ее в БД."""
     if message.text == service.main_buttons[0]:
-        # service.writing_order_database(new_order)
         notice(message)
     elif message.text == service.main_buttons[2]:
         create_order_2(message, flag=1)
 
 
 def notice(message):
+    """Отправляем данные директору и замерщику сообщение о том, что создана заявка."""
     new_order = service.compile_order(message.chat.id, message.text)
     mes = f'Имя: {new_order[0]}\n\nТелефон клиента: {new_order[1]}\n\nИнформация о заказе: {new_order[2]}'
     tbot.send_message(service.measurer_id, f'Поступила новая заявка:\n\n{mes}')
     tbot.send_message(service.director_id, f'Поступила новая заявка:\n\n{mes}')
-
-
-def mark_order(message):
-    pass

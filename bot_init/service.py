@@ -1,16 +1,15 @@
 from django.core.cache import cache
 
 from bot_init.models import Order
-from bot_init.views import notice
 
 users_id = [['director', None], ['manager', 407475894], ['measurer', None], ['installer', None]]
-#694285636
+# 694285636
 director_id = 407475894
 manager_id = 407475894
 measurer_id = 407475894
 
 main_menu_button = 'Главное меню'
-director_buttons = ['Информация о заказах', 'Список активных заказов' main_menu_button]
+director_buttons = ['Информация о заказах', 'Список активных заказов', main_menu_button]
 manager_buttons = ['Создать заказ', 'Информация о заказе', 'Список активных заказов', main_menu_button]
 measurer_buttons = ['Информация о заказе', 'Список активных заказов', main_menu_button]
 notice_butons = ['Принято в работу', 'Добавить примечания', main_menu_button]
@@ -70,5 +69,5 @@ def compile_order(id, inform, data='get_data'):
 
 
 def writing_order_database(new_order):
-    """Сохраняем данные в БД."""
-    Order(name_client = new_order[0], phone_client = new_order[0], info = new_order[0])
+    """Сохраняем заказ в БД."""
+    Order.objects.create(name_client=new_order[0], phone_client=new_order[0], info=new_order[0])
