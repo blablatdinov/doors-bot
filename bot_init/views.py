@@ -30,6 +30,7 @@ def bot(request):
 def start_handler(message):
     """Обработчик команды /start."""
     user = service.menu_user(message.chat.id)
+    logger.info(f'{int(message.text.split()[1])}')
     if user is not None:
         main_menu(message)
     else:
@@ -145,6 +146,14 @@ def save_order(message):
     if message.text == service.main_buttons[0]:
         new_order = service.compile_order(message.chat.id, '', 'save_order')
         notice(new_order)
+        text = (
+            f'Заявка успешно сохранена.\n'
+            f'Передайте заказчику ссылку: https://t.me/{settings.TG_BOT.name}?start={new_order.id}'
+        )
+        tbot.send_message(
+            message.chat.id,
+            text,
+        )
     elif message.text == service.main_buttons[2]:
         create_order_2(message, flag=1)
 
