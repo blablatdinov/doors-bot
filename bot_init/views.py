@@ -143,14 +143,18 @@ def create_order_4(message):
 def save_order(message):
     """Обработчик создания новогового заказа. В случае правильности полной информации, записываем ее в БД."""
     if message.text == service.main_buttons[0]:
-        notice(message)
+        new_order = service.compile_order(message.chat.id, '', 'save_order')
+        notice(new_order)
     elif message.text == service.main_buttons[2]:
         create_order_2(message, flag=1)
 
 
-def notice(message):
+def notice(order):
     """Отправляем данные директору и замерщику сообщение о том, что создана заявка."""
-    new_order = service.compile_order(message.chat.id, message.text)
-    mes = f'Имя: {new_order[0]}\n\nТелефон клиента: {new_order[1]}\n\nИнформация о заказе: {new_order[2]}'
+    mes = (
+        f'Имя: {order.user.first_name}\n\n'
+        f'Телефон клиента: {order.user.phone}\n\n'
+        f'Информация о заказе: {order.info}'
+    )
     tbot.send_message(service.measurer_id, f'Поступила новая заявка:\n\n{mes}')
     tbot.send_message(service.director_id, f'Поступила новая заявка:\n\n{mes}')

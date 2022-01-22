@@ -1,12 +1,17 @@
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
+from loguru import logger
 
-from bot_init.models import Order
+from orders.models import Order
 
-users_id = [['director', None], ['manager', 407475894], ['measurer', None], ['installer', None]]
+User = get_user_model()
+
+users_id = [['director', None], ['manager', 358610865], ['measurer', None], ['installer', None]]
 # 694285636
-director_id = 407475894
-manager_id = 407475894
-measurer_id = 407475894
+# 358610865
+director_id = 358610865
+manager_id = 358610865
+measurer_id = 358610865
 
 main_menu_button = 'Главное меню'
 director_buttons = ['Информация о заказах', 'Список активных заказов', main_menu_button]
@@ -53,12 +58,31 @@ def split_name(name):
 
 
 def compile_order(id, inform, data='get_data'):
-    """Обработчик данных по заказу. Сохраняем данные в кэш."""
+    r"""Обработчик данных по заказу. Сохраняем данные в кэш.
+
+    TODO: рассмотреть вариант с классом
+
+    >>> class OrderCreator:
+
+    >>>    def set_full_name(self, manager_id, full_name):
+    >>>        logger.info(f'Manager {id} set full name: {inform}')
+    >>>        cache.set(f'{id}_name', f'{inform[0]}\n{inform[1]}\n{inform[2]}', 6000)
+
+    >>>    def set_phone(self, manager_id, phone):
+    >>>        logger.info(f'Manager {id} set phone: {inform}')
+    >>>        cache.set(f'{id}_phone', inform, 6000)
+
+    >>>    def get_data()
+    >>>        pass
+    """
     if data == 'full_name':
-        cache.set(f'{id}_name', f'Фамиля: {inform[0]}\nИмя: {inform[1]}\nОтчество: {inform[2]}', 6000)
+        logger.info(f'Manager {id} set full name: {inform}')
+        cache.set(f'{id}_name', f'{inform[0]}\n{inform[1]}\n{inform[2]}', 6000)
     elif data == 'phone':
+        logger.info(f'Manager {id} set phone: {inform}')
         cache.set(f'{id}_phone', inform, 6000)
     elif data == 'inform_order':
+        logger.info(f'Manager {id} set order info: {inform}')
         cache.set(f'{id}_inform_order', inform, 6000)
     elif data == 'get_data':
         full_name = cache.get(f'{id}_name')
@@ -66,8 +90,32 @@ def compile_order(id, inform, data='get_data'):
         inform_order = cache.get(f'{id}_inform_order')
         new_order = [full_name, phone, inform_order]
         return new_order
+    elif data == 'save_order':
+        last_name, first_name, father_name = cache.get(f'{id}_name').split('\n')
+        phone = cache.get(f'{id}_phone')
+        inform_order = cache.get(f'{id}_inform_order')
+        username = _generate_username(f'{last_name}_{first_name}')
+        user = User.objects.create(
+            first_name=first_name,
+            last_name=last_name,
+            father_name=father_name,
+            username=username,
+        )
+        order = Order.objects.create(
+            user=user,
+            info=inform_order,
+        )
+        return order
 
 
-def writing_order_database(new_order):
-    """Сохраняем заказ в БД."""
-    Order.objects.create(name_client=new_order[0], phone_client=new_order[0], info=new_order[0])
+def _generate_username(username):
+    logger.debug(f'Try generate username by {username}')
+    counter = 1
+    while True:
+        if not User.objects.filter(username=username).exists():
+            logger.warning(f'Username: {username} not find in database')
+            return username
+
+        username = f'{username}{counter}'
+        logger.debug(f'Username: {username} find in database. Check {username}')
+        counter += 1
