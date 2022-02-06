@@ -6,22 +6,28 @@ from orders.models import Order
 
 User = get_user_model()
 
-users_id = [['director', None], ['manager', 358610865], ['measurer', None], ['installer', None]]
-# 694285636
-# 358610865
-director_id = 358610865
-manager_id = 358610865
-measurer_id = 358610865
+# my_id = 358610865
+# my_id = 694285636
+my_id = 407475894
+
+users_id = [['director', None], ['manager', my_id], ['measurer', None], ['installer', None], ['deliveryman', None]]
+# director_id = my_id
+# manager_id = my_id
+# measurer_id = my_id
 
 main_menu_button = 'Главное меню'
 director_buttons = ['Информация о заказах', 'Список активных заказов', main_menu_button]
 manager_buttons = ['Создать заказ', 'Информация о заказе', 'Список активных заказов', main_menu_button]
-measurer_buttons = ['Информация о заказе', 'Список активных заказов', main_menu_button]
+measurer_buttons = ['Информация о заказе', 'Список активных заказов', 'Поставить отметку к заказу', main_menu_button]
 notice_butons = ['Принято в работу', 'Добавить примечания', main_menu_button]
 main_buttons = ['Да', 'Нет', 'Изменить данные']
 
 manager_questions = [
     'Введите ФИО клиента', 'Введите номер телефона', 'Введите информацию о заказе', 'Пожалуйста, проверьте данные:'
+    ]
+
+measurer_questions = [
+    'Введите номер закза и через пробел текст', 'Пожалуйста, проверьте данные'
     ]
 
 
@@ -108,7 +114,17 @@ def compile_order(id, inform, data='get_data'):
         return order
 
 
+def customer_registration(order_id, message_chat_id):
+    """Обработка регистрации закзчика."""
+    order = Order.objects.get(id=order_id)
+    user = order.user
+    user.chat_id = message_chat_id
+    order.user_id = message_chat_id
+    user.save()
+
+
 def _generate_username(username):
+    """Генератор юзернейма."""
     logger.debug(f'Try generate username by {username}')
     counter = 1
     while True:

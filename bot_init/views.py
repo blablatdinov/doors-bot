@@ -30,7 +30,12 @@ def bot(request):
 def start_handler(message):
     """Обработчик команды /start."""
     user = service.menu_user(message.chat.id)
-    logger.info(f'{int(message.text.split()[1])}')
+    try:
+        order_id = int(message.text.split()[1])
+        service.customer_registration(order_id, message.chat.id)
+        logger.info(f'{int(message.text.split()[1])}')
+    except ValueError:
+        pass
     if user is not None:
         main_menu(message)
     else:
@@ -75,7 +80,7 @@ def measurer_menu(message):
     for button in service.measurer_buttons:
         markup.row(button)
     question = tbot.send_message(message.chat.id, 'Пожалуйста, выберите действие.', reply_markup=markup)
-    tbot.register_next_step_handler(question, start_handler)
+    tbot.register_next_step_handler(question, measurer_action)
 
 
 def installer_menu(message):
@@ -92,6 +97,15 @@ def manager_action(message):
     if message.text == service.manager_buttons[0] or message.text == service.main_buttons[2]:
         question = tbot.send_message(message.chat.id, service.manager_questions[0])
         tbot.register_next_step_handler(question, create_order_1)
+    else:
+        measurer_menu(message)
+
+
+def measurer_action(message):
+    """Обработчик команд замерщика."""
+    if message.text == service.measurer_buttons[2]:
+        question = tbot.send_message(message.chat.id, service.measurer_questions[0])
+        tbot.register_next_step_handler(question, mark_to_order)
     else:
         measurer_menu(message)
 
@@ -163,7 +177,8 @@ def notice(order):
     mes = (
         f'Имя: {order.user.first_name}\n\n'
         f'Телефон клиента: {order.user.phone}\n\n'
-        f'Информация о заказе: {order.info}'
+        f'Информация о заказе: {order.info}\n\n'
+        f'Номер заказа: {order.id}'
     )
     tbot.send_message(service.measurer_id, f'Поступила новая заявка:\n\n{mes}')
     tbot.send_message(service.director_id, f'Поступила новая заявка:\n\n{mes}')
