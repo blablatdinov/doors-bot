@@ -22,4 +22,4 @@ def group(mixer, user):
 
 
 def test(user):
-    user.role() == 'manager'
+    assert user.role() == 'manager'
