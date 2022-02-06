@@ -135,3 +135,18 @@ def _generate_username(username):
         username = f'{username}{counter}'
         logger.debug(f'Username: {username} find in database. Check {username}')
         counter += 1
+
+
+def mark_order(user_id, order_id, text):
+    """Обработчик записи отметок к заказу."""
+    group = user_select(user_id)
+    order = Order.objects.get(id=order_id)
+    if group == 'measurer':
+        order.info_from_measurer = ' '.join(text)
+        order.save()
+    elif group == 'installer':
+        order.info_installer_datetime = ' '.join(text)
+        order.save()
+    elif group == 'deliveryman_datetime':
+        order.deliveryman_datetime = ' '.join(text)
+        order.save()

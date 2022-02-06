@@ -110,6 +110,16 @@ def measurer_action(message):
         measurer_menu(message)
 
 
+def mark_to_order(message):
+    """Обработчик записи отметок к заказу."""
+    try:
+        text = message.text.split()
+        order_id = int(text[0])
+        service.mark_order(message.chat.id, order_id, text[1::])
+    except ValueError:
+        pass
+
+
 def create_order_1(message):
     """Обработчик создания нового заказа. Уточням ФИО клиента."""
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
