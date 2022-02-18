@@ -9,3 +9,6 @@ class User(AbstractUser):
     father_name = models.CharField(_('Отчество'), max_length=64, null=True, blank=True)
     chat_id = models.BigIntegerField(_('Id в телеграм'), null=True)
     phone = models.CharField(_('Номер телефона'), max_length=16, null=True, blank=True)
+
+    class Meta:
+        db_table = 'auth_user'
