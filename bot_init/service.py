@@ -1,7 +1,11 @@
+from time import sleep
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from loguru import logger
 
+from bot_init.utils import get_tbot_instance
 from orders.models import Order
 
 User = get_user_model()
@@ -120,6 +124,15 @@ def customer_registration(order_id, message_chat_id):
     user.chat_id = message_chat_id
     order.user_id = message_chat_id
     user.save()
+
+
+def update_webhook(host=f'{settings.TG_BOT.webhook_host}/{settings.TG_BOT.token}'):
+    """Обновляем webhook."""
+    tbot = get_tbot_instance()
+    tbot.remove_webhook()
+    sleep(1)
+    tbot.set_webhook(host)
+    logger.info(tbot.get_webhook_info())
 
 
 def _generate_username(username):

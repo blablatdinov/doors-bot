@@ -8,7 +8,7 @@ SECRET_KEY = 'django-insecure-0hsf(im%p0x)uy_j(ky)4tnfsbi^$sm9(0(ksz@+q7x)gyvye$
 
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env('ALLOWED_HOSTS', list, default=[])
 
 ROOT_URLCONF = 'config.urls'
 
