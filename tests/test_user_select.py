@@ -12,6 +12,11 @@ def user(mixer):
     return mixer.blend(User)
 
 
+@pytest.fixture()
+def user_without_groups(mixer):
+    return mixer.blend(User)
+
+
 @pytest.fixture(autouse=True)
 def group(mixer, user):
     g = mixer.blend(Group, name='manager')
@@ -21,3 +26,7 @@ def group(mixer, user):
 
 def test(user):
     assert user.role() == 'manager'
+
+
+def test_user_without_group(user_without_groups):
+    assert user_without_groups.role() is None

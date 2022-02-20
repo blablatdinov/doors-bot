@@ -1,3 +1,5 @@
+from enum import Enum
+
 import telebot
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
@@ -28,31 +30,59 @@ def bot(request):
 
 @tbot.message_handler(commands=['start'])
 def start_handler(message):
-    """Обработчик команды /start."""
-    user = service.menu_user(message.chat.id)
+    """Обработчик команды /start.
+
+    TODO: вынести в сервисы.
+    """
     try:
         order_id = int(message.text.split()[1])
         service.customer_registration(order_id, message.chat.id)
         logger.info(f'{int(message.text.split()[1])}')
-    except ValueError:
+    except (ValueError, IndexError):
         pass
-    if user is not None:
-        main_menu(message)
-    else:
-        tbot.send_message(message.chat.id, 'hello')
+
+    main_menu(message)
+
+
+class RoleEnum(Enum):
+    """Перечисление с ролями.
+
+    TODO: перенести
+    """
+
+    lead = 'Руководитель'
+    manager = 'Менеджер'
+    measurer = 'Замерщик'
+    deliveryman = 'Доставщик'
+    installer = 'Установщик'
 
 
 @tbot.message_handler(content_types=['text'])
 def main_menu(message):
-    """Обработчик id пользователя."""
-    user = service.menu_user(message.chat.id)
-    if user == 'director':
+    """Обработчик id пользователя.
+
+    TODO: рассмотреть вариант со словарем
+    func = {
+        'director': director_menu,
+        'manager': manager_menu,
+        'measurer': measurer_menu,
+        'installer': installer_menu,
+    }.get(role)
+    func(message)
+    """
+    role = service.get_user_role_by_chat_id(message.chat.id)
+    if role is None:
+        tbot.send_message(message.chat.id, 'hello')
+        return
+
+    role = RoleEnum(role).name
+    if role == 'director':
         director_menu(message)
-    elif user == 'manager':
+    elif role == 'manager':
         manager_menu(message)
-    elif user == 'measurer':
+    elif role == 'measurer':
         measurer_menu(message)
-    elif user == 'installer':
+    elif role == 'installer':
         installer_menu(message)
 
 

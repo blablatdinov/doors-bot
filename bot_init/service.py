@@ -34,17 +34,12 @@ measurer_questions = [
     ]
 
 
-def user_select(id):
-    """Обработчик id пользователя по словарю 'должность: id'."""
-    for i in users_id:
-        if i[1] == id:
-            return i[0]
-
-
-def menu_user(id):
+def get_user_role_by_chat_id(chat_id):
     """Обработчик id пользователя, возвращает его должность."""
-    user = user_select(id)
-    return(user)
+    try:
+        return User.objects.get(chat_id=chat_id).role()
+    except User.DoesNotExist:
+        return None
 
 
 def split_name(name):
@@ -67,6 +62,7 @@ def split_name(name):
 
 
 class PermissionDenied(Exception):
+    """Ошбика, вызываемая, при отсутсвии прав."""
 
     pass
 
@@ -158,7 +154,7 @@ def _generate_username(username):
 
 def mark_order(user_id, order_id, text):
     """Обработчик записи отметок к заказу."""
-    group = user_select(user_id)
+    group = get_user_role_by_chat_id(user_id)
     order = Order.objects.get(id=order_id)
     if group == 'measurer':
         order.info_from_measurer = ' '.join(text)
