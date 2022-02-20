@@ -30,6 +30,12 @@ def bot(request):
 def start_handler(message):
     """Обработчик команды /start."""
     user = service.menu_user(message.chat.id)
+    try:
+        order_id = int(message.text.split()[1])
+        service.customer_registration(order_id, message.chat.id)
+        logger.info(f'{int(message.text.split()[1])}')
+    except ValueError:
+        pass
     if user is not None:
         main_menu(message)
     else:
@@ -74,7 +80,7 @@ def measurer_menu(message):
     for button in service.measurer_buttons:
         markup.row(button)
     question = tbot.send_message(message.chat.id, 'Пожалуйста, выберите действие.', reply_markup=markup)
-    tbot.register_next_step_handler(question, start_handler)
+    tbot.register_next_step_handler(question, measurer_action)
 
 
 def installer_menu(message):
@@ -95,6 +101,25 @@ def manager_action(message):
         measurer_menu(message)
 
 
+def measurer_action(message):
+    """Обработчик команд замерщика."""
+    if message.text == service.measurer_buttons[2]:
+        question = tbot.send_message(message.chat.id, service.measurer_questions[0])
+        tbot.register_next_step_handler(question, mark_to_order)
+    else:
+        measurer_menu(message)
+
+
+def mark_to_order(message):
+    """Обработчик записи отметок к заказу."""
+    try:
+        text = message.text.split()
+        order_id = int(text[0])
+        service.mark_order(message.chat.id, order_id, text[1::])
+    except ValueError:
+        tbot.send_message(message.chat.id, 'Что-то пошло не так...')
+
+
 def create_order_1(message):
     """Обработчик создания нового заказа. Уточням ФИО клиента."""
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -108,7 +133,10 @@ def create_order_1(message):
         'Если все верно нажмите "Да"'
     )
     question = tbot.send_message(message.chat.id, mes, reply_markup=markup)
-    service.compile_order(message.chat.id, name_client, 'full_name')
+    try:
+        service.compile_order(message.chat.id, name_client, 'full_name')
+    except PermissionDenied:
+        tbot.send_message(message.chat.id, 'Вам не доступно это действие')
     tbot.register_next_step_handler(question, create_order_2)
 
 
@@ -145,6 +173,14 @@ def save_order(message):
     if message.text == service.main_buttons[0]:
         new_order = service.compile_order(message.chat.id, '', 'save_order')
         notice(new_order)
+        text = (
+            f'Заявка успешно сохранена.\n'
+            f'Передайте заказчику ссылку: https://t.me/{settings.TG_BOT.name}?start={new_order.id}'
+        )
+        tbot.send_message(
+            message.chat.id,
+            text,
+        )
     elif message.text == service.main_buttons[2]:
         create_order_2(message, flag=1)
 
@@ -154,7 +190,8 @@ def notice(order):
     mes = (
         f'Имя: {order.user.first_name}\n\n'
         f'Телефон клиента: {order.user.phone}\n\n'
-        f'Информация о заказе: {order.info}'
+        f'Информация о заказе: {order.info}\n\n'
+        f'Номер заказа: {order.id}'
     )
     tbot.send_message(service.measurer_id, f'Поступила новая заявка:\n\n{mes}')
     tbot.send_message(service.director_id, f'Поступила новая заявка:\n\n{mes}')

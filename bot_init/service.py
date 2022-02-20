@@ -10,22 +10,27 @@ from orders.models import Order
 
 User = get_user_model()
 
-users_id = [['director', None], ['manager', 358610865], ['measurer', None], ['installer', None]]
-# 694285636
-# 358610865
-director_id = 358610865
-manager_id = 358610865
-measurer_id = 358610865
+
+users_test_id = [407475894, 358610865, 694285636]
+
+my_id = users_test_id[0]
+
+users_id = [['director', None], ['manager', None], ['measurer', my_id], ['installer', None], ['deliveryman', None]]
+
 
 main_menu_button = 'Главное меню'
 director_buttons = ['Информация о заказах', 'Список активных заказов', main_menu_button]
 manager_buttons = ['Создать заказ', 'Информация о заказе', 'Список активных заказов', main_menu_button]
-measurer_buttons = ['Информация о заказе', 'Список активных заказов', main_menu_button]
+measurer_buttons = ['Информация о заказе', 'Список активных заказов', 'Поставить отметку к заказу', main_menu_button]
 notice_butons = ['Принято в работу', 'Добавить примечания', main_menu_button]
 main_buttons = ['Да', 'Нет', 'Изменить данные']
 
 manager_questions = [
     'Введите ФИО клиента', 'Введите номер телефона', 'Введите информацию о заказе', 'Пожалуйста, проверьте данные:'
+    ]
+
+measurer_questions = [
+    'Введите номер закза и через пробел текст', 'Пожалуйста, проверьте данные'
     ]
 
 
@@ -61,6 +66,11 @@ def split_name(name):
     return full_name
 
 
+class PermissionDenied(Exception):
+
+    pass
+
+
 def compile_order(id, inform, data='get_data'):
     r"""Обработчик данных по заказу. Сохраняем данные в кэш.
 
@@ -79,6 +89,8 @@ def compile_order(id, inform, data='get_data'):
     >>>    def get_data()
     >>>        pass
     """
+    if User.objects.get(chat_id=id).role() != 'manager':
+        raise PermissionDenied
     if data == 'full_name':
         logger.info(f'Manager {id} set full name: {inform}')
         cache.set(f'{id}_name', f'{inform[0]}\n{inform[1]}\n{inform[2]}', 6000)
@@ -112,6 +124,15 @@ def compile_order(id, inform, data='get_data'):
         return order
 
 
+def customer_registration(order_id, message_chat_id):
+    """Обработка регистрации закзчика."""
+    order = Order.objects.get(id=order_id)
+    user = order.user
+    user.chat_id = message_chat_id
+    order.user_id = message_chat_id
+    user.save()
+
+
 def update_webhook(host=f'{settings.TG_BOT.webhook_host}/{settings.TG_BOT.token}'):
     """Обновляем webhook."""
     tbot = get_tbot_instance()
@@ -122,6 +143,7 @@ def update_webhook(host=f'{settings.TG_BOT.webhook_host}/{settings.TG_BOT.token}
 
 
 def _generate_username(username):
+    """Генератор юзернейма."""
     logger.debug(f'Try generate username by {username}')
     counter = 1
     while True:
@@ -132,3 +154,18 @@ def _generate_username(username):
         username = f'{username}{counter}'
         logger.debug(f'Username: {username} find in database. Check {username}')
         counter += 1
+
+
+def mark_order(user_id, order_id, text):
+    """Обработчик записи отметок к заказу."""
+    group = user_select(user_id)
+    order = Order.objects.get(id=order_id)
+    if group == 'measurer':
+        order.info_from_measurer = ' '.join(text)
+        order.save()
+    elif group == 'installer':
+        order.info_installer_datetime = ' '.join(text)
+        order.save()
+    elif group == 'deliveryman_datetime':
+        order.deliveryman_datetime = ' '.join(text)
+        order.save()
