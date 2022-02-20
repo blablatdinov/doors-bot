@@ -2,8 +2,6 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
-from bot_init.service import user_select
-
 pytestmark = [pytest.mark.django_db]
 
 User = get_user_model()

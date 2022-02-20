@@ -11,4 +11,5 @@ class User(AbstractUser):
     phone = models.CharField(_('Номер телефона'), max_length=16, null=True, blank=True)
 
     def role(self):
+        """Получить роль пользователя."""
         ...
