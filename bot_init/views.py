@@ -1,12 +1,15 @@
 import telebot
+from telebot import types
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from loguru import logger
+from django.core.paginator import Paginator
 
 from bot_init import service
 from bot_init.utils import get_tbot_instance
+from orders.models import Order
 
 token = settings.TG_BOT.token
 tbot = get_tbot_instance()
@@ -34,6 +37,48 @@ def start_handler(message):
         main_menu(message)
     else:
         tbot.send_message(message.chat.id, 'hello')
+
+
+@tbot.callback_query_handler(func=lambda call: True)
+def inline_callback_handler(call):
+    page = int(call.data[16:-1])
+    elements_per_page = 3
+    paginator = Paginator(
+        Order.objects.all(),
+        elements_per_page,
+    )
+    paginated_elements = paginator.page(page)
+    keyboard = types.InlineKeyboardMarkup()
+    for i, elem in enumerate(paginated_elements, start=((page - 1) * elements_per_page) + 1):
+        keyboard.add(
+            types.InlineKeyboardButton(text=f'{i}) {elem}', callback_data='a')
+        )
+    keyboard.add(
+        types.InlineKeyboardButton(text='<', callback_data=f'get_orders_page({page - 1})'),
+        types.InlineKeyboardButton(text='>', callback_data=f'get_orders_page({page + 1})'),
+    )
+    tbot.send_message(call.from_user.id, f'page {page}', reply_markup=keyboard)
+
+
+@tbot.message_handler(commands=['pag'])
+def pag_handler(message):
+    page = int(message.text.split()[1])
+    elements_per_page = 3
+    paginator = Paginator(
+        Order.objects.all(),
+        elements_per_page,
+    )
+    paginated_elements = paginator.page(page)
+    keyboard = types.InlineKeyboardMarkup()
+    for i, elem in enumerate(paginated_elements, start=((page - 1) * elements_per_page) + 1):
+        keyboard.add(
+            types.InlineKeyboardButton(text=f'{i}) {elem}', callback_data='a')
+        )
+    keyboard.add(
+        types.InlineKeyboardButton(text='<', callback_data=f'get_orders_page({page - 1})'),
+        types.InlineKeyboardButton(text='>', callback_data=f'get_orders_page({page + 1})'),
+    )
+    tbot.send_message(message.chat.id, f'page {page}', reply_markup=keyboard)
 
 
 @tbot.message_handler(content_types=['text'])
