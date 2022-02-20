@@ -66,6 +66,11 @@ def split_name(name):
     return full_name
 
 
+class PermissionDenied(Exception):
+
+    pass
+
+
 def compile_order(id, inform, data='get_data'):
     r"""Обработчик данных по заказу. Сохраняем данные в кэш.
 
@@ -84,6 +89,8 @@ def compile_order(id, inform, data='get_data'):
     >>>    def get_data()
     >>>        pass
     """
+    if User.objects.get(chat_id=id).role() != 'manager':
+        raise PermissionDenied
     if data == 'full_name':
         logger.info(f'Manager {id} set full name: {inform}')
         cache.set(f'{id}_name', f'{inform[0]}\n{inform[1]}\n{inform[2]}', 6000)

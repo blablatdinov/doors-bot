@@ -133,7 +133,10 @@ def create_order_1(message):
         'Если все верно нажмите "Да"'
     )
     question = tbot.send_message(message.chat.id, mes, reply_markup=markup)
-    service.compile_order(message.chat.id, name_client, 'full_name')
+    try:
+        service.compile_order(message.chat.id, name_client, 'full_name')
+    except PermissionDenied:
+        tbot.send_message(message.chat.id, 'Вам не доступно это действие')
     tbot.register_next_step_handler(question, create_order_2)
 
 
