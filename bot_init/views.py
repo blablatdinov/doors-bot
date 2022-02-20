@@ -117,7 +117,7 @@ def mark_to_order(message):
         order_id = int(text[0])
         service.mark_order(message.chat.id, order_id, text[1::])
     except ValueError:
-        pass
+        tbot.send_message(message.chat.id, 'Что-то пошло не так...')
 
 
 def create_order_1(message):

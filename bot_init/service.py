@@ -6,14 +6,13 @@ from orders.models import Order
 
 User = get_user_model()
 
-# my_id = 358610865
-# my_id = 694285636
-my_id = 407475894
 
-users_id = [['director', None], ['manager', my_id], ['measurer', None], ['installer', None], ['deliveryman', None]]
-# director_id = my_id
-# manager_id = my_id
-# measurer_id = my_id
+users_test_id = [407475894, 358610865, 694285636]
+
+my_id = users_test_id[0]
+
+users_id = [['director', None], ['manager', None], ['measurer', my_id], ['installer', None], ['deliveryman', None]]
+
 
 main_menu_button = 'Главное меню'
 director_buttons = ['Информация о заказах', 'Список активных заказов', main_menu_button]
