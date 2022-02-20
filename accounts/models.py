@@ -12,4 +12,4 @@ class User(AbstractUser):
 
     def role(self):
         """Получить роль пользователя."""
-        ...
+        return self.groups.first().name
